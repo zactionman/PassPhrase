@@ -1,0 +1,17 @@
+#! /bin/bash
+
+# A basic little module to be called by the PassPhrase program to handle encryption
+# and decryption. It should take either 'e' or 'd' as the first argument. 'e' tells
+# it to encrypt and 'd' tells it to decrypt. The second argument is the file to
+# encrypt/decrypt, and the third argument is the password for the cipher.
+
+TYPE=$1
+FILE=$2
+PASS=$3
+
+if [[ $TYPE == 'e' && -f $FILE ]]; then
+	openssl aes-256-cbc -a -salt -in $file -out ${file}.enc -pass pass:$PASS
+elif [[ $TYPE == 'd' && -f $FILE ]]; then
+	openssl aes-256-cbc -d -a -in $FILE -pass pass:$PASS
+else
+	echo 'There was a problem with encryption/decryption' 1>&2

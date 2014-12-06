@@ -15,7 +15,7 @@ class App():
 
 		# Main content frame
 		self.mainframe = Frame(master)
-		self.mainframe.grid()
+		self.mainframe.grid(sticky=(N,E,S,W))
 
 
 		# Make Menus
@@ -37,21 +37,42 @@ class App():
 
 		# Treeview widget
 		self.tree = Treeview(self.mainframe)
-		self.tree.grid()
-		self.tree.column('#0', width=80)
+		self.tree.grid(row=0, column=0, sticky=(N,E,S,W))
+		self.tree.column('#0', width=100, minwidth=75)
 		self.tree.heading('#0', text='Service')
 		tcolumns = ('Login', 'Password', 'Answer1', 'Answer2', 'Answer3',
 			'Answer4', 'Answer5', 'Modified')
 		self.tree['columns'] = tcolumns
 		for colname in tcolumns:
-			self.tree.column(colname, width=80)
+			self.tree.column(colname, width=100, minwidth=75)
 			self.tree.heading(colname, text=colname)
+
+		# Scrollbars
+		self.vscroll = Scrollbar(self.mainframe, orient=VERTICAL, command=self.tree.yview)
+		self.xscroll = Scrollbar(self.mainframe, orient=HORIZONTAL, command=self.tree.xview)
+		self.tree.configure(yscrollcommand=self.vscroll.set, xscrollcommand=self.xscroll.set)
+		self.vscroll.grid(row=0, column=1, sticky=(N,S,W))
+		self.xscroll.grid(row=1, column=0, sticky=(N,E,W))
+
+		# Sizegrip
+		Sizegrip(self.mainframe).grid(row=1, column=1, sticky=(E,S))
+
+		# Make resizeable
+		master.columnconfigure(0, weight=1)
+		master.rowconfigure(0, weight=1)
+		self.mainframe.columnconfigure(0, weight=1)
+		self.mainframe.rowconfigure(0, weight=1)
 			
 
+	def AddPass(self):
+		pass
+
+	
 	def placeholder(self, *args):
 		print ('This is a placeholder')
 
-root = Tk()
-root.title('PassPhrase')
-app = App(root)
-root.mainloop()
+if __name__ == '__main__':
+	root = Tk()
+	root.title('PassPhrase')
+	app = App(root)
+	root.mainloop()

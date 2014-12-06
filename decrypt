@@ -1,6 +1,0 @@
-#! /bin/bash
-
-file=$1
-password=$2
-
-openssl aes-256-cbc -d -a -in $file -pass pass:$password

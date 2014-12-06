@@ -1,0 +1,8 @@
+#! /bin/bash
+
+file=$1
+passphrase=$2
+
+openssl aes-256-cbc -a -salt -in $file -out ${file}.enc -pass pass:$passphrase
+
+

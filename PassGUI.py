@@ -64,8 +64,9 @@ class App():
 		self.mainframe.rowconfigure(0, weight=1)
 			
 
-	def AddPass(self):
-		pass
+	def AddPassBox(self):
+		# GUI for adding a service and related password info to program
+		PassBox = Toplevel(self.master)
 
 	
 	def placeholder(self, *args):

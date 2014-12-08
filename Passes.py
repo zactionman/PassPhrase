@@ -17,5 +17,7 @@ class Phrase():
 		for answer in *args:
 			self.Phrases[Serv].append(answer)
 
+	def Remove(self, Serv):
+		pass
 
 		

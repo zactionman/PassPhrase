@@ -14,7 +14,7 @@ class Phrase():
 		self.Phrases['Services'].append(Serv)
 
 		self.Phrases[Serv] = [Log, Passwd]
-		for answer in *args:
+		for answer in args:
 			self.Phrases[Serv].append(answer)
 
 	def Remove(self, Serv):

@@ -7,12 +7,13 @@
 
 from tkinter import *
 from tkinter.ttk import *
+import Passes
 
 class App():
 
 	def __init__(self, master):
+		# Create a instance binding to master (root) window
 		self.master = master
-
 		# Main content frame
 		self.mainframe = Frame(master)
 		self.mainframe.grid(sticky=(N,E,S,W))
@@ -27,7 +28,7 @@ class App():
 		filemenu.add_command(label='Exit', command=self.placeholder)
 		menubar.add_cascade(menu=filemenu, label='File')
 		editmenu = Menu(menubar)
-		editmenu.add_command(label='Add', command=self.placeholder)
+		editmenu.add_command(label='Add', command=self.AddPassBox)
 		editmenu.add_command(label='Remove', command=self.placeholder)
 		editmenu.add_command(label='Modify', command=self.placeholder)
 		menubar.add_cascade(menu=editmenu, label='Edit')
@@ -62,18 +63,36 @@ class App():
 		master.rowconfigure(0, weight=1)
 		self.mainframe.columnconfigure(0, weight=1)
 		self.mainframe.rowconfigure(0, weight=1)
+
+		# Instantiate password data. (Not really gui related)
+		self.PassData = Passes.Phrase()
 			
 
 	def AddPassBox(self):
 		# GUI for adding a service and related password info to program
 		PassBox = Toplevel(self.master)
+		# Create list for getting args from PassBox
+		fields = ['Service', 'Login', 'Password', 'Answer 1', 'Answer 2', 'Answer 3',
+			'Answer 4', 'Answer 5']
+		self.ndata = [1, 2, 3, 4, 5, 6, 7, 8]
+		for index in range(0, 8):
+			self.ndata[index] = StringVar()
+			Label(PassBox, text=fields[index]).grid(column=0, row=index)
+			Entry(PassBox, textvariable=self.ndata[index]).grid(column=1, row=index)
+		butframe = Frame(PassBox); butframe.grid(column=1, row=8, sticky=EW)
+		Button(butframe, text='Ok', command=self.AddPass).grid(column=0, row=0, sticky=EW)
+		Button(butframe, text='Cancel', command=lambda: PassBox.destroy()).grid(column=1, row=0, sticky=EW)
 
+	def AddPass(self):
+		pass
 	
 	def placeholder(self, *args):
 		print ('This is a placeholder')
 
 if __name__ == '__main__':
+	# Instantiate GUI Stuff
 	root = Tk()
 	root.title('PassPhrase')
 	app = App(root)
 	root.mainloop()
+

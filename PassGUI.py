@@ -25,6 +25,8 @@ class App():
 		master['menu'] = menubar
 		filemenu = Menu(menubar)
 		filemenu.add_command(label='Save', command=self.placeholder)
+		filemenu.add_command(label='Import', command=self.placeholder)
+		filemenu.add_separator()
 		filemenu.add_command(label='Exit', command=self.placeholder)
 		menubar.add_cascade(menu=filemenu, label='File')
 		editmenu = Menu(menubar)
@@ -39,13 +41,13 @@ class App():
 		# Treeview widget
 		self.tree = Treeview(self.mainframe)
 		self.tree.grid(row=0, column=0, sticky=(N,E,S,W))
-		self.tree.column('#0', width=100, minwidth=75)
+		self.tree.column('#0', width=90, minwidth=50, anchor='center')
 		self.tree.heading('#0', text='Service')
 		tcolumns = ('Login', 'Password', 'Answer1', 'Answer2', 'Answer3',
 			'Answer4', 'Answer5', 'Modified')
 		self.tree['columns'] = tcolumns
 		for colname in tcolumns:
-			self.tree.column(colname, width=100, minwidth=75)
+			self.tree.column(colname, width=90, minwidth=50, anchor='center')
 			self.tree.heading(colname, text=colname)
 
 		# Scrollbars
@@ -80,12 +82,20 @@ class App():
 			Label(PassBox, text=fields[index]).grid(column=0, row=index)
 			Entry(PassBox, textvariable=self.ndata[index]).grid(column=1, row=index)
 		butframe = Frame(PassBox); butframe.grid(column=1, row=8, sticky=EW)
-		Button(butframe, text='Ok', command=self.AddPass).grid(column=0, row=0, sticky=EW)
+		Button(butframe, text='Ok', command=lambda: self.AddPass(PassBox)).grid(column=0, row=0, sticky=EW)
 		Button(butframe, text='Cancel', command=lambda: PassBox.destroy()).grid(column=1, row=0, sticky=EW)
 
-	def AddPass(self):
-		pass
-	
+	def AddPass(self, Caller):
+		data = []
+		for field in self.ndata:
+			data.append(field.get())
+
+		self.PassData.Add(data[0], data[1], data[2], data[3], data[4], data[5], data [6], data[7])
+		self.tree.insert('', 'end', text=data[0], values=(data[1], data[2], data[3], data[4],
+			data[5], data[6], data[7]))
+		Caller.destroy()
+
+
 	def placeholder(self, *args):
 		print ('This is a placeholder')
 

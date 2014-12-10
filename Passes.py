@@ -10,7 +10,8 @@ class Phrase():
 		self.Phrases = { 'Services' : [] }
 	
 	def Add(self, Serv, Log, Passwd, *args):
-		
+		# Add a entry to the Phrases dict.
+		# Key is service name and value is a list of related info
 		self.Phrases['Services'].append(Serv)
 
 		self.Phrases[Serv] = [Log, Passwd]

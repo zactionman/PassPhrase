@@ -31,7 +31,7 @@ class App():
 		menubar.add_cascade(menu=filemenu, label='File')
 		editmenu = Menu(menubar)
 		editmenu.add_command(label='Add', command=self.AddPassBox)
-		editmenu.add_command(label='Remove', command=self.placeholder)
+		editmenu.add_command(label='Remove', command=self.RemPass)
 		editmenu.add_command(label='Modify', command=self.placeholder)
 		menubar.add_cascade(menu=editmenu, label='Edit')
 		helpmenu = Menu(menubar)
@@ -90,10 +90,19 @@ class App():
 		for field in self.ndata:
 			data.append(field.get())
 
+		# Insert data into underlying dict
 		self.PassData.Add(data[0], data[1], data[2], data[3], data[4], data[5], data [6], data[7])
+		# Instert data into tree
 		self.tree.insert('', 'end', text=data[0], values=(data[1], data[2], data[3], data[4],
 			data[5], data[6], data[7]))
 		Caller.destroy()
+
+	def RemPass(self):
+		selection = self.tree.selection()
+		for serv in selection:
+			name = self.tree.item(serv, 'text')
+			self.PassData.Remove(name)
+			self.tree.delete(serv)
 
 
 	def placeholder(self, *args):

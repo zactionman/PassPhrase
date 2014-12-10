@@ -19,6 +19,11 @@ class Phrase():
 			self.Phrases[Serv].append(answer)
 
 	def Remove(self, Serv):
-		pass
+		# Get index for service name in Services list
+		n = self.Phrases['Services'].index(Serv)
+		# Delete service from service list
+		del self.Phrases['Services'][n]
+		# Delete related service info
+		del self.Phrases[Serv]
 
 		

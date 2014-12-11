@@ -68,7 +68,7 @@ class App():
 
 		# Instantiate password data. (Not really gui related)
 		self.PassData = Passes.Phrase()
-		if Passes.f.isfile('./.words.enc'):
+		if Passes.f.isfile(self.PassData.encfile):
 			self.GetEncr('open')	
 
 	def AddPassBox(self):
@@ -108,13 +108,13 @@ class App():
 	def SavePass(self, ekey, caller):
 		caller.destroy()
 		if len(ekey) > 0:
-			self.PassData.Save(self.PassData.Phrases, './.words', ekey)
+			self.PassData.Save(self.PassData.Phrases, self.PassData.wfile, ekey)
 		else:
-			self.PassData.save(self.PassData.Phrases, './.words')
+			self.PassData.save(self.PassData.Phrases, self.PassData.wfile)
 
 	def OpenPass(self, ekey, caller):
 		caller.destroy()
-		self.PassData.Phrases = self.PassData.Open('./.words', ekey)
+		self.PassData.Phrases = self.PassData.Open(self.PassData.wfile, ekey)
 		for service in self.PassData.Phrases['Services']:
 			servdata = tuple(self.PassData.Phrases[service])
 			self.tree.insert('', 'end', text=service, values=servdata)

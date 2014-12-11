@@ -1,0 +1,26 @@
+PassPhrase Version Alpha 1.0 12/11/2014
+
+	General Usage
+	-------------
+
+-	This program is used to view password information for computer resources/services
+	in a graphical format.
+-	The user can add services to the program and all related information will be
+	displayed in a tkinter tree widget.  Each service will have any optional related
+	information displayed in columns.  This includes login name, password, and any
+	relevent security question/answers.
+-	The user can remove any uneeded services from the tree widget.
+-	The information is stored in an encrypted pickle file when the program is not in
+	use which, hopefully, protects sensitive password information. Each time the user
+	saves the information she is queried for a cypher key.  She must then remember
+	this key as it will be used to encrypt all password information. When the
+	application starts it will look for this file and attempt to decrypt it, at which
+	point the user will be queried for this key so that the decryption can be completed.
+
+
+	Notes:
+	------
+	
+	This is the first 'working' version of this program, but many featuers still need to
+	be implemented.  I'm calling this alpha 1.0.  When all of the base featuers are complete
+	I will call it Final Release version 1.0.

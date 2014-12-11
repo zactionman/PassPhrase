@@ -7,12 +7,41 @@
 import pickle
 import subprocess
 import os.path as f
+import random
 
 class Phrase():
 
 	def __init__(self):
 		
 		self.Phrases = { 'Services' : [] }
+		
+		home = f.expanduser('~')
+		# Find any existing passwords files.  If none exist variable containing a path of where it will be written
+		if f.isfile(home + '/.config/passphrase/words.enc'):
+			self.encfile = home + '/.config/passphrase/words.enc'
+			self.wfile = home + '/.config/passphrase/words'
+		elif f.isfile(home + '/.passphrase/words.enc'):
+			self.encfile = home + '/.passphrase/words.enc'
+			self.wfile = home + '/.passphrase/words'
+		elif f.isfile('.words.enc'):
+			self.encfile = '.words.enc'
+			self.wfile = '.words'
+		else:
+			print ('\nNo previously created passwords. Starting with blank sheet')
+			if f.isdir(home + '/.config'):
+				self.encfile = home + '/.config/passphrase/words.enc'
+				self.wfile = home + '/.config/passphrase/words'
+				if not f.isdir(home + '/.config/passphrase'):
+					subprocess.call(['mkdir', home + '/.config/passphrase'])
+			elif f.exists(home):
+				self.encfile = home + '/.passphrase/words.enc'
+				self.wfile = home + '/.passphrase/words'
+				if not f.isdir(home + '/.passphrase'):
+					subprocess.call(['mkdir', home + '/.passphrase'])
+			else:
+				self.encfile = '.words.enc'
+				self.wfile = '.words'
+
 	
 	def Add(self, Serv, Log, Passwd, *args):
 		# Add a entry to the Phrases dict.
@@ -48,10 +77,13 @@ class Phrase():
 			loadfile = pickle.load(fil); return loadfile
 			fil.close()
 		else:
+			print ('creating temp file: {} for decryption'.format(openpath))
 			subprocess.call(['./cryptos', 'd', openpath, enckey])
-			fil = open('./.words', 'rb')
-			loadfile = pickle.load(fil); return loadfile
+			fil = open(openpath, 'rb')
+			loadfile = pickle.load(fil)
 			fil.close()
-			subprocess.call(['./cryptos', 'c', './.words', 'keystub'])
+			print ('\nDeleting file: {}'.format(openpath))
+			subprocess.call(['./cryptos', 'c', openpath, 'keystub'])
+			return loadfile
 		
 

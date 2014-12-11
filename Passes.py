@@ -1,7 +1,12 @@
 #! /usr/bin/python3
 
-# This is the part of the PassPhrase program for managing the passphrases and their
-# data internally
+# This module is responsible for maniging all internal data relating
+# to services/passwords and their related info. The idea is to keep
+# this data in an easily pickleable format.
+
+import pickle
+import subprocess
+import os.path as f
 
 class Phrase():
 
@@ -26,4 +31,27 @@ class Phrase():
 		# Delete related service info
 		del self.Phrases[Serv]
 
+	def Save(self, saveobj, savepath, enckey=None):
+		if enckey == None:
+			fil = open(savepath, 'wb')
+			pickle.dump(saveobj, fil)
+			fil.close()
+		else:
+			fil = open(savepath, 'wb')
+			pickle.dump(saveobj, fil)
+			fil.close()
+			subprocess.call(['./cryptos', 'e', savepath, enckey])
+
+	def Open(self, openpath, enckey=None):
+		if enckey == None:
+			fil = open(openpath, 'rb')
+			loadfile = pickle.load(fil); return loadfile
+			fil.close()
+		else:
+			subprocess.call(['./cryptos', 'd', openpath, enckey])
+			fil = open('./.words', 'rb')
+			loadfile = pickle.load(fil); return loadfile
+			fil.close()
+			subprocess.call(['./cryptos', 'c', './.words', 'keystub'])
 		
+

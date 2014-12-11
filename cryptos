@@ -10,8 +10,12 @@ FILE=$2
 PASS=$3
 
 if [[ $TYPE == 'e' && -f $FILE ]]; then
-	openssl aes-256-cbc -a -salt -in $file -out ${file}.enc -pass pass:$PASS
-elif [[ $TYPE == 'd' && -f $FILE ]]; then
-	openssl aes-256-cbc -d -a -in $FILE -pass pass:$PASS
+	openssl aes-256-cbc -a -salt -in $FILE -out ${FILE}.enc -pass pass:$PASS
+	rm $FILE
+elif [[ $TYPE == 'd' && -f ${FILE}.enc ]]; then
+	openssl aes-256-cbc -d -a -in ${FILE}.enc -out $FILE -pass pass:$PASS
+elif [[ $TYPE == 'c' && -f $FILE ]]; then
+	rm $FILE
 else
 	echo 'There was a problem with encryption/decryption' 1>&2
+fi

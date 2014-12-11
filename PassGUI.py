@@ -24,7 +24,7 @@ class App():
 		menubar = Menu(master)
 		master['menu'] = menubar
 		filemenu = Menu(menubar)
-		filemenu.add_command(label='Save', command=self.placeholder)
+		filemenu.add_command(label='Save', command=self.GetEncr)
 		filemenu.add_command(label='Import', command=self.placeholder)
 		filemenu.add_separator()
 		filemenu.add_command(label='Exit', command=self.placeholder)
@@ -68,7 +68,8 @@ class App():
 
 		# Instantiate password data. (Not really gui related)
 		self.PassData = Passes.Phrase()
-			
+		if Passes.f.isfile('./.words.enc'):
+			self.GetEncr('open')	
 
 	def AddPassBox(self):
 		# GUI for adding a service and related password info to program
@@ -104,6 +105,31 @@ class App():
 			self.PassData.Remove(name)
 			self.tree.delete(serv)
 
+	def SavePass(self, ekey, caller):
+		caller.destroy()
+		if len(ekey) > 0:
+			self.PassData.Save(self.PassData.Phrases, './.words', ekey)
+		else:
+			self.PassData.save(self.PassData.Phrases, './.words')
+
+	def OpenPass(self, ekey, caller):
+		caller.destroy()
+		self.PassData.Phrases = self.PassData.Open('./.words', ekey)
+		for service in self.PassData.Phrases['Services']:
+			servdata = tuple(self.PassData.Phrases[service])
+			self.tree.insert('', 'end', text=service, values=servdata)
+
+	def GetEncr(self, type='save'):
+		templevel = Toplevel(self.master)
+		getkey = StringVar()
+		Label(templevel, text='Entery Key/Password').grid(row=0, column=0, sticky='ew')
+		Entry(templevel, textvariable=getkey).grid(row=1, column=0, sticky='ew')
+		if type == 'open':
+			Button(templevel, text='Ok', command=lambda: self.OpenPass(getkey.get(),
+				templevel)).grid(row=2, column=0)
+		else:
+			Button(templevel, text='Ok', command=lambda: self.SavePass(getkey.get(), 
+				templevel)).grid(row=2, column=0)
 
 	def placeholder(self, *args):
 		print ('This is a placeholder')

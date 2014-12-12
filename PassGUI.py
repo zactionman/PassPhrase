@@ -7,6 +7,7 @@
 
 from tkinter import *
 from tkinter.ttk import *
+from tkinter import messagebox as mbox
 import Passes
 
 class App():
@@ -105,31 +106,47 @@ class App():
 			self.PassData.Remove(name)
 			self.tree.delete(serv)
 
-	def SavePass(self, ekey, caller):
+	def SavePass(self, ekey1, ekey2, caller):
 		caller.destroy()
-		if len(ekey) > 0:
-			self.PassData.Save(self.PassData.Phrases, self.PassData.wfile, ekey)
+		if ekey1 == ekey2 and len(ekey1) > 0:
+			self.PassData.Save(self.PassData.Phrases, self.PassData.wfile, ekey1)
+		elif ekey1 != ekey2 and len(ekey1) > 0:
+			mbox.showinfo(message="Error: Key1 and Key2 don't match.  Please retype them.")
+			self.GetEncr()
 		else:
-			self.PassData.save(self.PassData.Phrases, self.PassData.wfile)
+			mbox.showinfo(message="Warning: no encryption key provided.  Not encrypting passwords file")
+			self.PassData.Save(self.PassData.Phrases, self.PassData.wfile)
 
 	def OpenPass(self, ekey, caller):
 		caller.destroy()
-		self.PassData.Phrases = self.PassData.Open(self.PassData.wfile, ekey)
+		if len(ekey) > 0:
+			self.PassData.Phrases = self.PassData.Open(self.PassData.wfile, ekey)
+		else:
+			self.PassData.Phrases = self.PassData.Open(self.PassData.wfile)
+
 		for service in self.PassData.Phrases['Services']:
 			servdata = tuple(self.PassData.Phrases[service])
 			self.tree.insert('', 'end', text=service, values=servdata)
 
 	def GetEncr(self, type='save'):
+		# Popup toplevel for getting encryption key from user for opening and closing
+		# encrypted files. This is called with the 'open' when getting an encryption key
+		# for decryption and with no argument when getting encryption key for initial
+		# Encryption/saving.
 		templevel = Toplevel(self.master)
-		getkey = StringVar()
+		getkey1 = StringVar(); getkey2 = StringVar()
 		Label(templevel, text='Entery Key/Password').grid(row=0, column=0, sticky='ew')
-		Entry(templevel, textvariable=getkey).grid(row=1, column=0, sticky='ew')
+		Entry(templevel, textvariable=getkey1).grid(row=1, column=0, sticky='ew')
 		if type == 'open':
-			Button(templevel, text='Ok', command=lambda: self.OpenPass(getkey.get(),
+			# Call OpenPass method if passed the 'open' argument
+			Button(templevel, text='Ok', command=lambda: self.OpenPass(getkey1.get(),
 				templevel)).grid(row=2, column=0)
 		else:
-			Button(templevel, text='Ok', command=lambda: self.SavePass(getkey.get(), 
-				templevel)).grid(row=2, column=0)
+			# If not passed an argument get key for encryption and create a second
+			# entry widget for passphrase matching
+			Entry(templevel, textvariable=getkey2).grid(row=2, column=0, sticky='ew')
+			Button(templevel, text='Ok', command=lambda: self.SavePass(getkey1.get(), 
+				getkey2.get(), templevel)).grid(row=3, column=0)
 
 	def placeholder(self, *args):
 		print ('This is a placeholder')

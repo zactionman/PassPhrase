@@ -18,29 +18,25 @@ class Phrase():
 		home = f.expanduser('~')
 		# Find any existing passwords files.  
 		# If none exist create variable containing a path of where it will be written
-		if f.isfile(home + '/.config/passphrase/words.enc'):
-			self.encfile = home + '/.config/passphrase/words.enc'
+		if f.isfile(home + '/.config/passphrase/words.enc') or f.isfile(
+			home + '/.config/passphrase/words'):
 			self.wfile = home + '/.config/passphrase/words'
-		elif f.isfile(home + '/.passphrase/words.enc'):
-			self.encfile = home + '/.passphrase/words.enc'
+		elif f.isfile(home + '/.passphrase/words.enc') or f.isfile(
+			home + '/.passphrase/words'):
 			self.wfile = home + '/.passphrase/words'
-		elif f.isfile('.words.enc'):
-			self.encfile = '.words.enc'
+		elif f.isfile('.words.enc') or f.isfile('.words'):
 			self.wfile = '.words'
 		else:
 			print ('\nNo previously created passwords. Starting with blank sheet')
 			if f.isdir(home + '/.config'):
-				self.encfile = home + '/.config/passphrase/words.enc'
 				self.wfile = home + '/.config/passphrase/words'
 				if not f.isdir(home + '/.config/passphrase'):
 					subprocess.call(['mkdir', home + '/.config/passphrase'])
 			elif f.exists(home):
-				self.encfile = home + '/.passphrase/words.enc'
 				self.wfile = home + '/.passphrase/words'
 				if not f.isdir(home + '/.passphrase'):
 					subprocess.call(['mkdir', home + '/.passphrase'])
 			else:
-				self.encfile = '.words.enc'
 				self.wfile = '.words'
 
 	

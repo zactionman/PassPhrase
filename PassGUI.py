@@ -69,7 +69,7 @@ class App():
 
 		# Instantiate password data. (Not really gui related)
 		self.PassData = Passes.Phrase()
-		if Passes.f.isfile(self.PassData.encfile):
+		if Passes.f.isfile(self.PassData.wfile) or Passes.f.isfile(self.PassData.wfile + '.enc'):
 			self.GetEncr('open')	
 
 	def AddPassBox(self):

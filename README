@@ -24,3 +24,16 @@ PassPhrase Version Alpha 1.0 12/11/2014
 	This is the first 'working' version of this program, but many featuers still need to
 	be implemented.  I'm calling this alpha 1.0.  When all of the base featuers are complete
 	I will call it Final Release version 1.0.
+
+	History:
+	-------
+	12-13-2014 - Fixed problem with loading un-encrypted password data.
+	12-12-2014 - Added second encryption key input in save function.
+	12-11-2014 - Alpha release 1.0.  First draft of basic functionality.
+
+	Dependency:
+	----------
+	Python3
+	tkinter
+	bash
+	OpenSSL

@@ -114,7 +114,7 @@ class App():
 			mbox.showinfo(message="Error: Key1 and Key2 don't match.  Please retype them.")
 			self.GetEncr()
 		else:
-			mbox.showinfo(message="Warning: no encryption key provided.  Not encrypting passwords file")
+			self.Messages(1)
 			self.PassData.Save(self.PassData.Phrases, self.PassData.wfile)
 
 	def OpenPass(self, ekey, caller):
@@ -137,8 +137,10 @@ class App():
 		getkey1 = StringVar(); getkey2 = StringVar()
 		Label(templevel, text='Entery Key/Password').grid(row=0, column=0, sticky='ew')
 		Entry(templevel, textvariable=getkey1).grid(row=1, column=0, sticky='ew')
+		templevel.lift(self.master)
 		if type == 'open':
 			# Call OpenPass method if passed the 'open' argument
+			templevel.protocol("WM_DELETE_WINDOW", lambda: self.Messages(2, '', templevel))
 			Button(templevel, text='Ok', command=lambda: self.OpenPass(getkey1.get(),
 				templevel)).grid(row=2, column=0)
 		else:
@@ -147,6 +149,22 @@ class App():
 			Entry(templevel, textvariable=getkey2).grid(row=2, column=0, sticky='ew')
 			Button(templevel, text='Ok', command=lambda: self.SavePass(getkey1.get(), 
 				getkey2.get(), templevel)).grid(row=3, column=0)
+		
+
+	def Messages(self, messnum, mess='', caller=None):
+		# A place for prebuilt messages that can be called. Or a way to build custom messages.
+		if messnum == 1:
+			mbox.showinfo(message="Warning: no encryption key provided.  Not encrypting passwords file")
+		elif messnum == 2:
+			answer = mbox.askokcancel(message="""Warning: Open window closed.
+This will cause PassPhrase to make a new password data file and, if saved, will overwrite any previously saved data""")
+			if answer == True:
+				caller.destroy()
+			else:
+				pass
+		else:
+			print ('Please pass a valid message argument')
+
 
 	def placeholder(self, *args):
 		print ('This is a placeholder')

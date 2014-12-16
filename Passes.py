@@ -7,14 +7,18 @@
 import pickle
 import subprocess
 import os.path as f
-import random
+from sys import argv
 
 class Phrase():
 
 	def __init__(self):
 		
+		# Main data object
 		self.Phrases = { 'Services' : [] }
 		
+		# Get path to cryptos script
+		self.crypton = argv[0][:-10] + 'cryptos'
+		# Get user's home folder
 		home = f.expanduser('~')
 		# Find any existing passwords files.  
 		# If none exist create variable containing a path of where it will be written
@@ -68,7 +72,7 @@ class Phrase():
 			fil = open(savepath, 'wb')
 			pickle.dump(saveobj, fil)
 			fil.close()
-			subprocess.call(['./cryptos', 'e', savepath, enckey])
+			subprocess.call([self.crypton, 'e', savepath, enckey])
 
 	def Open(self, openpath, enckey=None):
 		if enckey == None:
@@ -79,13 +83,20 @@ class Phrase():
 		else:
 			# Decrypt file then load it
 			print ('Decrypting passwords to load into program')
-			subprocess.call(['./cryptos', 'd', openpath, enckey])
+			subprocess.call([self.crypton, 'd', openpath, enckey])
 			fil = open(openpath, 'rb')
 			loadfile = pickle.load(fil)
 			fil.close()
 			# Clean up the temporarily decrypted file
 			print ('Clean temp file')
-			subprocess.call(['./cryptos', 'c', openpath, 'keystub'])
+			subprocess.call([self.crypton, 'c', openpath, 'keystub'])
 			return loadfile
 		
-
+	def Export(self, filnam, delim='\t'):
+		with open(filnam, 'w') as expfil:
+			expfil.write("Password data sorted into the following fields separated by: '{}'\n".format(delim))
+			expfil.write('Servicename Login Password Answer1 Answer2 Answer3 Answer4 Answer5\n\n')
+			expfile.write('Password Data:')
+			for serv in self.Phrases['Services']:
+				curline = serv + delim + delim.join(self.Phrases[serv]) + '\n'
+				expfil.write(curline)

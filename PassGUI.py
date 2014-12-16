@@ -8,6 +8,7 @@
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox as mbox
+from tkinter import filedialog as fbox
 import Passes
 
 class App():
@@ -27,6 +28,7 @@ class App():
 		filemenu = Menu(menubar)
 		filemenu.add_command(label='Save', command=self.GetEncr)
 		filemenu.add_command(label='Import', command=self.placeholder)
+		filemenu.add_command(label='Export', command=self.ExportBox)
 		filemenu.add_separator()
 		filemenu.add_command(label='Exit', command=self.placeholder)
 		menubar.add_cascade(menu=filemenu, label='File')
@@ -150,7 +152,25 @@ class App():
 			Button(templevel, text='Ok', command=lambda: self.SavePass(getkey1.get(), 
 				getkey2.get(), templevel)).grid(row=3, column=0)
 		
+	def ExportBox(self):
+		delimiter = StringVar()
+		exbox = Toplevel(self.master)
+		Label(exbox, text='Type custom delimiter').grid(row=0, column=0, columnspan=2, sticky='ew')
+		Entry(exbox, textvariable=delimiter).grid(row=1, column=0, columnspan=2, sticky='ew')
+		Button(exbox, text='Ok', command=lambda: self.ExportPass(delimiter.get(), exbox)).grid(row=2, column=0, sticky='ew')
+		Button(exbox, text='Cancel', command=lambda: exbox.destroy()).grid(row=2, column=1, sticky='ew')
 
+	def ExportPass(self, delim, caller):
+		caller.destroy()
+		filname = fbox.asksaveasfilename()
+		if filname != '':
+			if len(delim) == 0:
+				self.PassData.Export(filname)
+			else:
+				self.PassData.Export(filname, delim)
+		else:
+			print ('filename box cancelled')
+	
 	def Messages(self, messnum, mess='', caller=None):
 		# A place for prebuilt messages that can be called. Or a way to build custom messages.
 		if messnum == 1:

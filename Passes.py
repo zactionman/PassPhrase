@@ -96,7 +96,11 @@ class Phrase():
 		with open(filnam, 'w') as expfil:
 			expfil.write("Password data sorted into the following fields separated by: '{}'\n".format(delim))
 			expfil.write('Servicename Login Password Answer1 Answer2 Answer3 Answer4 Answer5\n\n')
-			expfile.write('Password Data:')
+			expfil.write('Password Data:')
 			for serv in self.Phrases['Services']:
 				curline = serv + delim + delim.join(self.Phrases[serv]) + '\n'
 				expfil.write(curline)
+			print (expfil.closed)
+
+		print (expfil.closed)
+

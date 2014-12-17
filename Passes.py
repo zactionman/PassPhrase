@@ -92,11 +92,35 @@ class Phrase():
 			subprocess.call([self.crypton, 'c', openpath, 'keystub'])
 			return loadfile
 		
+	def Import(self, filnam, delim='\t'):
+		# Open file for parsing
+		with open(filnam, 'r') as impfil:
+			# Keep track of services added
+			added = []
+			# Parse the file line by line and add stuff
+			for line in impfil:
+				# Split line into list
+				ser = line.split(delim)
+				if len(ser) >= 8:
+					self.Add(ser[0], ser[1], ser[2], ser[3], ser[4],
+						ser[5], ser[6], ser[7])
+				elif len(ser) < 8:
+					while len(ser) < 8:
+						ser.append('')
+					self.Add(ser[0], ser[1], ser[2], ser[3], ser[4],
+						ser[5], ser[6], ser[7])
+				else:
+					print ("Import Error: This shouldn't happen")
+				# Append the most recent service to added list
+				added.append(ser[0:8])
+		# Return a list of added services to caller
+		return added
+
 	def Export(self, filnam, delim='\t'):
 		with open(filnam, 'w') as expfil:
 			expfil.write("Password data sorted into the following fields separated by: '{}'\n".format(delim))
 			expfil.write('Servicename Login Password Answer1 Answer2 Answer3 Answer4 Answer5\n\n')
-			expfil.write('Password Data:')
+			expfil.write('Password Data:\n')
 			for serv in self.Phrases['Services']:
 				curline = serv + delim + delim.join(self.Phrases[serv]) + '\n'
 				expfil.write(curline)

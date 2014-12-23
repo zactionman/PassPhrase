@@ -7,9 +7,11 @@
 import pickle
 import subprocess
 import os.path as f
+from time import localtime as localt
 from sys import argv
 
 class Phrase():
+	"""An object containing all internal password data and methods for managing this data"""
 
 	def __init__(self):
 		
@@ -45,15 +47,41 @@ class Phrase():
 
 	
 	def Add(self, Serv, Log, Passwd, *args):
+		"""Add service(s) to the internal data structure"""
+
 		# Add a entry to the Phrases dict.
 		# Key is service name and value is a list of related info
 		self.Phrases['Services'].append(Serv)
 
 		self.Phrases[Serv] = [Log, Passwd]
 		for answer in args:
-			self.Phrases[Serv].append(answer)
+			if type(answer) is list:
+				for ans in answer:
+					if len(self.Phrases[Serv]) < 7:
+						self.Phrases[Serv].append(ans)
+					else:
+						#print ('Hit length 8: stopping add')
+						break
+			else:
+				if len(self.Phrases[Serv]) < 7:
+					self.Phrases[Serv].append(answer)
+				else:
+					#print ('Hit length 8: stopping add')
+					break
+		else:
+			while len(self.Phrases[Serv]) < 7:
+				#print ('adding filler')
+				self.Phrases[Serv].append('')
+
+		# Add time created/modified
+		tim = localt(); mtm = ''
+		mtim = str(tim[0]) + '/' + str(tim[1]) + '/' + str(tim[2])
+		mtim = mtim + ' ' + str(tim[3]) + ':' + str(tim[4])
+		self.Phrases[Serv].append(mtim)
 
 	def Remove(self, Serv):
+		"""Remove service(s) from internal data structure"""
+
 		# Get index for service name in Services list
 		n = self.Phrases['Services'].index(Serv)
 		# Delete service from service list
@@ -62,37 +90,39 @@ class Phrase():
 		del self.Phrases[Serv]
 
 	def Save(self, saveobj, savepath, enckey=None):
+		"""Writeout internal data structure to picklefile then (optionally) encrypt it"""
+
 		if enckey == None:
 			# If no encryption key provided don't encrypt
-			fil = open(savepath, 'wb')
-			pickle.dump(saveobj, fil)
-			fil.close()
+			with open(savepath, 'wb') as fil:
+				pickle.dump(saveobj, fil)
 		else:
 			# Pickle to file then encrypt file
-			fil = open(savepath, 'wb')
-			pickle.dump(saveobj, fil)
-			fil.close()
+			with open(savepath, 'wb') as fil:
+				pickle.dump(saveobj, fil)
 			subprocess.call([self.crypton, 'e', savepath, enckey])
 
 	def Open(self, openpath, enckey=None):
+		"""Decrypt (optional) picklefile then load it into internal data structure"""
+
 		if enckey == None:
 			# If no encryption key provided assume that file is not encrypted
-			fil = open(openpath, 'rb')
-			loadfile = pickle.load(fil); return loadfile
-			fil.close()
+			with open(openpath, 'rb') as fil:
+				loadfile = pickle.load(fil)
 		else:
 			# Decrypt file then load it
 			print ('Decrypting passwords to load into program')
 			subprocess.call([self.crypton, 'd', openpath, enckey])
-			fil = open(openpath, 'rb')
-			loadfile = pickle.load(fil)
-			fil.close()
+			with open(openpath, 'rb') as fil:
+				loadfile = pickle.load(fil)
 			# Clean up the temporarily decrypted file
 			print ('Clean temp file')
 			subprocess.call([self.crypton, 'c', openpath, 'keystub'])
-			return loadfile
+		self.Phrases = loadfile
 		
 	def Import(self, filnam, delim='\t'):
+		"""Import data from a field delimited text file"""
+
 		# Open file for parsing
 		with open(filnam, 'r') as impfil:
 			# Keep track of services added
@@ -101,30 +131,21 @@ class Phrase():
 			for line in impfil:
 				# Split line into list
 				ser = line.split(delim)
-				if len(ser) >= 8:
-					self.Add(ser[0], ser[1], ser[2], ser[3], ser[4],
-						ser[5], ser[6], ser[7])
-				elif len(ser) < 8:
-					while len(ser) < 8:
-						ser.append('')
-					self.Add(ser[0], ser[1], ser[2], ser[3], ser[4],
-						ser[5], ser[6], ser[7])
-				else:
-					print ("Import Error: This shouldn't happen")
-				# Append the most recent service to added list
-				added.append(ser[0:8])
-		# Return a list of added services to caller
+				# Add that data to the programs internal structures
+				self.Add(ser[0], ser[1], ser[2], ser[3:])
+				added.append(ser[0])
+		# Return a list of added services to caller (So that the gui can add stuff to tree)
 		return added
 
 	def Export(self, filnam, delim='\t'):
+		"""Export data to a field delimited text file"""
+
 		with open(filnam, 'w') as expfil:
 			expfil.write("Password data sorted into the following fields separated by: '{}'\n".format(delim))
 			expfil.write('Servicename Login Password Answer1 Answer2 Answer3 Answer4 Answer5\n\n')
 			expfil.write('Password Data:\n')
 			for serv in self.Phrases['Services']:
-				curline = serv + delim + delim.join(self.Phrases[serv]) + '\n'
+				curline = serv + delim + delim.join(self.Phrases[serv])
 				expfil.write(curline)
-			print (expfil.closed)
 
-		print (expfil.closed)
 

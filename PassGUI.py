@@ -12,6 +12,7 @@ from tkinter import filedialog as fbox
 import Passes
 
 class App():
+	"""An object containing all the specifications for the Tkinter GUI"""
 
 	def __init__(self, master):
 		# Create a instance binding to master (root) window
@@ -71,10 +72,13 @@ class App():
 
 		# Instantiate password data. (Not really gui related)
 		self.PassData = Passes.Phrase()
+		# Open data file if it exists
 		if Passes.f.isfile(self.PassData.wfile) or Passes.f.isfile(self.PassData.wfile + '.enc'):
 			self.GetEncr('open')	
 
 	def AddPassBox(self):
+		"""Popup toplevel to get password/service info from user"""
+
 		# GUI for adding a service and related password info to program
 		PassBox = Toplevel(self.master)
 		# Create list for getting args from PassBox
@@ -90,16 +94,17 @@ class App():
 		Button(butframe, text='Cancel', command=lambda: PassBox.destroy()).grid(column=1, row=0, sticky=EW)
 
 	def AddPass(self, Caller):
+		"""Add user defined information to the program"""
+
+		Caller.destroy()
 		data = []
 		for field in self.ndata:
 			data.append(field.get())
 
 		# Insert data into underlying dict
-		self.PassData.Add(data[0], data[1], data[2], data[3], data[4], data[5], data [6], data[7])
+		self.PassData.Add(data[0], data[1], data[2], data[3:])
 		# Instert data into tree
-		self.tree.insert('', 'end', text=data[0], values=(data[1], data[2], data[3], data[4],
-			data[5], data[6], data[7]))
-		Caller.destroy()
+		self.tree.insert('', 'end', text=data[0], values=(tuple(self.PassData.Phrases[data[0]])))
 
 	def RemPass(self):
 		selection = self.tree.selection()
@@ -122,9 +127,9 @@ class App():
 	def OpenPass(self, ekey, caller):
 		caller.destroy()
 		if len(ekey) > 0:
-			self.PassData.Phrases = self.PassData.Open(self.PassData.wfile, ekey)
+			self.PassData.Open(self.PassData.wfile, ekey)
 		else:
-			self.PassData.Phrases = self.PassData.Open(self.PassData.wfile)
+			self.PassData.Open(self.PassData.wfile)
 
 		for service in self.PassData.Phrases['Services']:
 			servdata = tuple(self.PassData.Phrases[service])
@@ -174,8 +179,8 @@ class App():
 			else:
 				imported = self.PassData.Import(filname, delim)
 		for serv in imported:
-			vals = tuple(serv[1:])
-			self.tree.insert('', 'end', text=serv[0], values=vals)
+			vals = tuple(self.PassData.Phrases[serv])
+			self.tree.insert('', 'end', text=serv, values=vals)
 		mbox.showinfo(message='Import Complete')
 
 	def ExportPass(self, delim, caller):

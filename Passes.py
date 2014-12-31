@@ -51,20 +51,20 @@ class Phrase():
 
 		# Add a entry to the Phrases dict.
 		# Key is service name and value is a list of related info
-		self.Phrases['Services'].append(Serv)
+		self.Phrases['Services'].append(Serv.split('\n')[0])
 
 		self.Phrases[Serv] = [Log, Passwd]
 		for answer in args:
 			if type(answer) is list:
 				for ans in answer:
 					if len(self.Phrases[Serv]) < 7:
-						self.Phrases[Serv].append(ans)
+						self.Phrases[Serv].append(ans.split('\n')[0])
 					else:
 						#print ('Hit length 8: stopping add')
 						break
 			else:
 				if len(self.Phrases[Serv]) < 7:
-					self.Phrases[Serv].append(answer)
+					self.Phrases[Serv].append(answer.split('\n')[0])
 				else:
 					#print ('Hit length 8: stopping add')
 					break
@@ -146,6 +146,6 @@ class Phrase():
 			expfil.write('Password Data:\n')
 			for serv in self.Phrases['Services']:
 				curline = serv + delim + delim.join(self.Phrases[serv])
-				expfil.write(curline)
+				expfil.write(curline + '\n')
 
 

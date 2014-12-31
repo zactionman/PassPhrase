@@ -140,22 +140,25 @@ class App():
 		# encrypted files. This is called with the 'open' when getting an encryption key
 		# for decryption and with no argument when getting encryption key for initial
 		# Encryption/saving.
-		templevel = Toplevel(self.master)
+		toplevel = Toplevel(self.master)
+		templevel = Frame(toplevel, padding=6); templevel.grid()
 		getkey1 = StringVar(); getkey2 = StringVar()
-		Label(templevel, text='Entery Key/Password').grid(row=0, column=0, sticky='ew')
-		Entry(templevel, textvariable=getkey1).grid(row=1, column=0, sticky='ew')
-		templevel.lift(self.master)
+		Label(templevel, text='Entery Key/Password', anchor='center').grid(row=0, column=0, columnspan=2, sticky='ew')
+		Entry(templevel, textvariable=getkey1, show='*').grid(row=1, column=1, sticky='ew')
+		Label(templevel, text='Key: ').grid(row=1, column=0, sticky='e')
+		toplevel.lift(self.master)
 		if type == 'open':
 			# Call OpenPass method if passed the 'open' argument
-			templevel.protocol("WM_DELETE_WINDOW", lambda: self.Messages(2, '', templevel))
+			toplevel.protocol("WM_DELETE_WINDOW", lambda: self.Messages(2, '', toplevel))
 			Button(templevel, text='Ok', command=lambda: self.OpenPass(getkey1.get(),
-				templevel)).grid(row=2, column=0)
+				toplevel)).grid(row=2, column=1, sticky='ew')
 		else:
 			# If not passed an argument get key for encryption and create a second
 			# entry widget for passphrase matching
-			Entry(templevel, textvariable=getkey2).grid(row=2, column=0, sticky='ew')
+			Entry(templevel, textvariable=getkey2, show='*').grid(row=2, column=1, sticky='ew')
+			Label(templevel, text='Re-Type: ', anchor='w').grid(row=2, column=0, sticky='e')
 			Button(templevel, text='Ok', command=lambda: self.SavePass(getkey1.get(), 
-				getkey2.get(), templevel)).grid(row=3, column=0)
+				getkey2.get(), toplevel)).grid(row=3, column=1, sticky='ew')
 		
 	def ImExBox(self, whatdo='Import'):
 		# Toplevel GUI for getting a delimiter for importing and exporting

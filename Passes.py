@@ -46,48 +46,58 @@ class Phrase():
                 self.wfile = '.words'
 
     
-    def Add(self, Serv, Log, Passwd, *args):
+    def Add(self, Serv, *args):
         """Add service(s) to the internal data structure"""
 
-        # Add a entry to the Phrases dict.
-        # Key is service name and value is a list of related info
-        self.Phrases['Services'].append(Serv.split('\n')[0])
+        # Make sure Service doesn't already exist
+        if self.Phrases['Services'].count(Serv) == 0:
+            # Add a entry to the Phrases dict.
+            # Key is service name and value is a list of related info
+            self.Phrases['Services'].append(Serv)
 
-        self.Phrases[Serv] = [Log, Passwd]
-        for answer in args:
-            if type(answer) is list:
-                for ans in answer:
-                    if len(self.Phrases[Serv]) < 7:
-                        self.Phrases[Serv].append(ans.split('\n')[0])
-                    else:
-                        #print ('Hit length 8: stopping add')
-                        break
-            else:
-                if len(self.Phrases[Serv]) < 7:
-                    self.Phrases[Serv].append(answer.split('\n')[0])
+            # Create and popular a flat list of arguments (password data)
+            apdata = []
+            for answer in args:
+                if type(answer) is list:
+                    apdata.extend(answer)
                 else:
-                    #print ('Hit length 8: stopping add')
-                    break
-        else:
+                    apdata.append(answer)
+            # Create internal list using listcomp
+            self.Phrases[Serv] = [arg.strip('\n') for arg in apdata[:7]]
+            # If list is less then seven add blank stuff
             while len(self.Phrases[Serv]) < 7:
-                #print ('adding filler')
-                self.Phrases[Serv].append('')
+                self.Phrases[Serv].append('--')
 
-        # Add time created/modified
-        tim = localt(); mtm = ''
-        mtim = str(tim[0]) + '/' + str(tim[1]) + '/' + str(tim[2])
-        mtim = mtim + ' ' + str(tim[3]) + ':' + str(tim[4])
-        self.Phrases[Serv].append(mtim)
+            # Add time created/modified
+            tim = localt(); mtm = ''
+            mtim = str(tim[0]) + '/' + str(tim[1]) + '/' + str(tim[2])
+            mtim = mtim + ' ' + str(tim[3]) + ':' + str(tim[4])
+            self.Phrases[Serv].append(mtim)
+            
+            # Return added info for - incase calling frontend wants it...
+            return [Serv] + self.Phrases[Serv]
+            
+        else:
+            print ('This service already exists.  Please choose a unique service name')
+            return None
 
-    def Remove(self, Serv):
+    def Remove(self, *args):
         """Remove service(s) from internal data structure"""
 
+        for arg in args:
+            if type(arg) is list:
+                [self.Phrases['Services'].remove(serv) for serv in arg]
+                [self.Phrases.__delitem__(serv) for serv in arg]
+            else:
+                self.Phrases['Services'].remove(arg)
+                del self.Phrases[arg]
         # Get index for service name in Services list
-        n = self.Phrases['Services'].index(Serv)
+        #n = self.Phrases['Services'].index(Serv)
         # Delete service from service list
-        del self.Phrases['Services'][n]
+        #del self.Phrases['Services'][n]
         # Delete related service info
-        del self.Phrases[Serv]
+        #del self.Phrases[Serv]
+
 
     def Save(self, saveobj, savepath, enckey=None):
         """Writeout internal data structure to picklefile then (optionally) encrypt it"""
@@ -101,6 +111,7 @@ class Phrase():
             with open(savepath, 'wb') as fil:
                 pickle.dump(saveobj, fil)
             subprocess.call([self.crypton, 'e', savepath, enckey])
+
 
     def Open(self, openpath, enckey=None):
         """Decrypt (optional) picklefile then load it into internal data structure"""
@@ -119,6 +130,7 @@ class Phrase():
             print ('Clean temp file')
             subprocess.call([self.crypton, 'c', openpath, 'keystub'])
         self.Phrases = loadfile
+
         
     def Import(self, filnam, delim='\t'):
         """Import data from a field delimited text file"""
@@ -132,10 +144,11 @@ class Phrase():
                 # Split line into list
                 ser = line.split(delim)
                 # Add that data to the programs internal structures
-                self.Add(ser[0], ser[1], ser[2], ser[3:])
+                self.Add(ser[0], ser[1:])
                 added.append(ser[0])
         # Return a list of added services to caller (So that the gui can add stuff to tree)
         return added
+
 
     def Export(self, filnam, delim='\t'):
         """Export data to a field delimited text file"""

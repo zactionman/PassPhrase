@@ -14,13 +14,13 @@ import Passes
 class App():
     """An object containing all the specifications for the Tkinter GUI"""
 
+
     def __init__(self, master):
         # Create a instance binding to master (root) window
         self.master = master
         # Main content frame
         self.mainframe = Frame(master)
         self.mainframe.grid(sticky=(N,E,S,W))
-
 
         # Make Menus
         root.option_add('*tearOff', FALSE)
@@ -76,6 +76,7 @@ class App():
         if Passes.f.isfile(self.PassData.wfile) or Passes.f.isfile(self.PassData.wfile + '.enc'):
             self.GetEncr('open')    
 
+
     def AddPassBox(self):
         """Popup toplevel to get password/service info from user"""
 
@@ -93,25 +94,33 @@ class App():
         Button(butframe, text='Ok', command=lambda: self.AddPass(PassBox)).grid(column=0, row=0, sticky=EW)
         Button(butframe, text='Cancel', command=lambda: PassBox.destroy()).grid(column=1, row=0, sticky=EW)
 
+
     def AddPass(self, Caller):
         """Add user defined information to the program"""
 
         Caller.destroy()
+        # Get all data needed from entry widgets
         data = []
         for field in self.ndata:
             data.append(field.get())
 
         # Insert data into underlying dict
-        self.PassData.Add(data[0], data[1], data[2], data[3:])
+        added = self.PassData.Add(data[0], data[1:])
         # Instert data into tree
-        self.tree.insert('', 'end', text=data[0], values=(tuple(self.PassData.Phrases[data[0]])))
+        if added != None:
+            self.tree.insert('', 'end', text=added[0], values=(tuple(added[1:])))
+
 
     def RemPass(self):
+        # Get the id's of selected nodes in tree.
         selection = self.tree.selection()
+        # Get a list of service names
+        remlist = [self.tree.item(serv, 'text') for serv in selection]
+        # Remove stuff
+        self.PassData.Remove(remlist)
         for serv in selection:
-            name = self.tree.item(serv, 'text')
-            self.PassData.Remove(name)
             self.tree.delete(serv)
+
 
     def SavePass(self, ekey1, ekey2, caller):
         caller.destroy()
@@ -124,6 +133,7 @@ class App():
             self.Messages(1)
             self.PassData.Save(self.PassData.Phrases, self.PassData.wfile)
 
+
     def OpenPass(self, ekey, caller):
         caller.destroy()
         if len(ekey) > 0:
@@ -134,6 +144,7 @@ class App():
         for service in self.PassData.Phrases['Services']:
             servdata = tuple(self.PassData.Phrases[service])
             self.tree.insert('', 'end', text=service, values=servdata)
+
 
     def GetEncr(self, type='save'):
         # Popup toplevel for getting encryption key from user for opening and closing
@@ -159,6 +170,7 @@ class App():
             Label(templevel, text='Re-Type: ', anchor='w').grid(row=2, column=0, sticky='e')
             Button(templevel, text='Ok', command=lambda: self.SavePass(getkey1.get(), 
                 getkey2.get(), toplevel)).grid(row=3, column=1, sticky='ew')
+
         
     def ImExBox(self, whatdo='Import'):
         # Toplevel GUI for getting a delimiter for importing and exporting
@@ -171,6 +183,7 @@ class App():
         else:
             Button(exbox, text='Ok', command=lambda: self.ImportPass(delimiter.get(), exbox)).grid(row=2, column=0, sticky='ew')
         Button(exbox, text='Cancel', command=lambda: exbox.destroy()).grid(row=2, column=1, sticky='ew')
+
 
     def ImportPass(self, delim, caller):
         # Function to import data from text file
@@ -186,6 +199,7 @@ class App():
             self.tree.insert('', 'end', text=serv, values=vals)
         mbox.showinfo(message='Import Complete')
 
+
     def ExportPass(self, delim, caller):
         # Function to export data to text file
         caller.destroy()
@@ -197,6 +211,7 @@ class App():
                 self.PassData.Export(filname, delim)
         else:
             print ('filename box cancelled')
+
     
     def Messages(self, messnum, mess='', caller=None):
         # A place for prebuilt messages that can be called. Or a way to build custom messages.
@@ -215,6 +230,7 @@ This will cause PassPhrase to make a new password data file and, if saved, will 
 
     def placeholder(self, *args):
         print ('This is a placeholder')
+
 
 if __name__ == '__main__':
     # Instantiate GUI Stuff

@@ -19,6 +19,7 @@ class Phrase():
         self.Phrases = { 'Services' : [] }
         
         # Get path to cryptos script
+        # This will eventually change as I will eventually re-write cryptos in python
         self.crypton = argv[0][:-10] + 'cryptos'
         # Get user's home folder
         home = f.expanduser('~')
@@ -114,23 +115,45 @@ class Phrase():
 
 
     def Open(self, openpath, enckey=None):
-        """Decrypt (optional) picklefile then load it into internal data structure"""
+        """Decrypt (optional) picklefile then load it into internal data structure.
+        
+        Phrase.Open needs to be called with the path of the file to be opened.  If
+        the openpath is encrypted the encryption key needs to be passed as an argument
+        as well.  If no encryption key is passed it will assume that the file is not
+        encrypted.
 
-        if enckey == None:
-            # If no encryption key provided assume that file is not encrypted
-            with open(openpath, 'rb') as fil:
-                loadfile = pickle.load(fil)
-        else:
-            # Decrypt file then load it
-            print ('Decrypting passwords to load into program')
-            subprocess.call([self.crypton, 'd', openpath, enckey])
-            with open(openpath, 'rb') as fil:
-                loadfile = pickle.load(fil)
-            # Clean up the temporarily decrypted file
-            print ('Clean temp file')
+        If the file is succesfully encrypted/opened then the pickle file will be loaded
+        into the Self.Phrases dict (which is where all the internal dat is stored).  True
+        will be returned so that any calling frontend can know that this was succesful.
+
+        If the file does not exist or the encryption key is incorrect then any garbage
+        files (resulting from bad decryption) will be cleaned and False will be returned so
+        that any calling frontend can know that the data was not properly loaded.
+        """
+
+        try:
+            if enckey == None:
+                # If no encryption key provided assume that file is not encrypted
+                with open(openpath, 'rb') as fil:
+                    loadfile = pickle.load(fil)
+            else:
+                # Decrypt file then load it
+                print ('Decrypting passwords to load into program')
+                subprocess.call([self.crypton, 'd', openpath, enckey])
+                with open(openpath, 'rb') as fil:
+                    loadfile = pickle.load(fil)
+                # Clean up the temporarily decrypted file
+                print ('Clean temp file')
+                subprocess.call([self.crypton, 'c', openpath, 'keystub'])
+            self.Phrases = loadfile
+            return True
+        except pickle.UnpicklingError:
+            print ('Typed in wrong encryption key')
             subprocess.call([self.crypton, 'c', openpath, 'keystub'])
-        self.Phrases = loadfile
-
+            return False
+        except FileNotFoundError:
+            print ('File is encrypted, please type encryption key.')
+            return False
         
     def Import(self, filnam, delim='\t'):
         """Import data from a field delimited text file"""

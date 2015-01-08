@@ -137,16 +137,20 @@ class App():
     def OpenPass(self, ekey, caller):
         caller.destroy()
         if len(ekey) > 0:
-            self.PassData.Open(self.PassData.wfile, ekey)
+            success = self.PassData.Open(self.PassData.wfile, ekey)
         else:
-            self.PassData.Open(self.PassData.wfile)
+            success = self.PassData.Open(self.PassData.wfile)
 
-        for service in self.PassData.Phrases['Services']:
-            servdata = tuple(self.PassData.Phrases[service])
-            self.tree.insert('', 'end', text=service, values=servdata)
+        if success:
+            for service in self.PassData.Phrases['Services']:
+                servdata = tuple(self.PassData.Phrases[service])
+                self.tree.insert('', 'end', text=service, values=servdata)
+        else:
+            self.Messages(3)
+            self.GetEncr('open')
 
 
-    def GetEncr(self, type='save'):
+    def GetEncr(self, etype='save'):
         # Popup toplevel for getting encryption key from user for opening and closing
         # encrypted files. This is called with the 'open' when getting an encryption key
         # for decryption and with no argument when getting encryption key for initial
@@ -158,7 +162,7 @@ class App():
         Entry(templevel, textvariable=getkey1, show='*').grid(row=1, column=1, sticky='ew')
         Label(templevel, text='Key: ').grid(row=1, column=0, sticky='e')
         toplevel.lift(self.master)
-        if type == 'open':
+        if etype == 'open':
             # Call OpenPass method if passed the 'open' argument
             toplevel.protocol("WM_DELETE_WINDOW", lambda: self.Messages(2, '', toplevel))
             Button(templevel, text='Ok', command=lambda: self.OpenPass(getkey1.get(),
@@ -224,6 +228,8 @@ This will cause PassPhrase to make a new password data file and, if saved, will 
                 caller.destroy()
             else:
                 pass
+        elif messnum == 3:
+            mbox.showinfo(message="Failure opening or decrypting data file.  Please retype encryption key")
         else:
             print ('Please pass a valid message argument')
 

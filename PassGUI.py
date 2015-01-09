@@ -90,13 +90,17 @@ class App():
             self.ndata[index] = StringVar()
             Label(PassBox, text=fields[index]).grid(column=0, row=index)
             Entry(PassBox, textvariable=self.ndata[index]).grid(column=1, row=index)
+        # Make buttons (grid them inside their own frame
         butframe = Frame(PassBox); butframe.grid(column=1, row=8, sticky=EW)
-        Button(butframe, text='Ok', command=lambda: self.AddPass(PassBox)).grid(column=0, row=0, sticky=EW)
+        b1 = Button(butframe, text='Ok', default='active', command=lambda: self.AddPass(PassBox))
+        b1.grid(column=0, row=0, sticky=EW)
         Button(butframe, text='Cancel', command=lambda: PassBox.destroy()).grid(column=1, row=0, sticky=EW)
+        # Bind the enter/return key to the 'Ok' button.
+        PassBox.bind('<Return>', lambda e: b1.invoke())
 
 
     def AddPass(self, Caller):
-        """Add user defined information to the program"""
+        """Add user defined information to the program."""
 
         Caller.destroy()
         # Get all data needed from entry widgets
@@ -112,6 +116,7 @@ class App():
 
 
     def RemPass(self):
+        """Remove password data by getting selection from tree widget."""
         # Get the id's of selected nodes in tree.
         selection = self.tree.selection()
         # Get a list of service names
@@ -123,6 +128,17 @@ class App():
 
 
     def SavePass(self, ekey1, ekey2, caller):
+        """Get enccryption key (optional) and pass it to the save method of internal data class.
+        
+        SavePass is called by the GetEncr GUI which expects the user to type in an 
+        encryption key. If SavePass is called with an empty encryption key it calls the
+        Save method without providing a key for encryption - essentailly bypassing
+        encryption alltogether.
+
+        If SavePass is provided one (or two) non-empty encryption keys it first verifies
+        that both encryption keys match and then passes the encryption key to the save
+        method.
+        """
         caller.destroy()
         if ekey1 == ekey2 and len(ekey1) > 0:
             self.PassData.Save(self.PassData.Phrases, self.PassData.wfile, ekey1)
@@ -135,6 +151,15 @@ class App():
 
 
     def OpenPass(self, ekey, caller):
+        """Pass an encryption key to the open method of the internal data class.
+
+        OpenPass is called by GetEncr and passes the encryption key input by the user
+        to the open method of the internal data structure.  If the encryption key is
+        incorrect the internal data structure should detect this and return false.  If
+        this happens then OpenPass will provide an error message to the user and ask
+        her to re-type the encryption key.
+        """
+
         caller.destroy()
         if len(ekey) > 0:
             success = self.PassData.Open(self.PassData.wfile, ekey)
@@ -151,64 +176,89 @@ class App():
 
 
     def GetEncr(self, etype='save'):
-        # Popup toplevel for getting encryption key from user for opening and closing
-        # encrypted files. This is called with the 'open' when getting an encryption key
-        # for decryption and with no argument when getting encryption key for initial
-        # Encryption/saving.
+        """Draw a toplevel GUI for getting encryption keys from the user.
+        
+        If called with the option 'open' GetEncr will provide only one entry field
+        of which it will pass the contents to OpenPass.  If called with 'save' option
+        then GetEncr will provide two entry fields the contents of which will be
+        passed to SavePass (this is the default behavoir if no argument is provided).
+        """
+
         toplevel = Toplevel(self.master)
         templevel = Frame(toplevel, padding=6); templevel.grid()
-        getkey1 = StringVar(); getkey2 = StringVar()
-        Label(templevel, text='Entery Key/Password', anchor='center').grid(row=0, column=0, columnspan=2, sticky='ew')
-        Entry(templevel, textvariable=getkey1, show='*').grid(row=1, column=1, sticky='ew')
+        getkey1, getkey2 = StringVar(), StringVar()
+        Label(templevel, text='Entery Key/Password', anchor='center').grid(
+                row=0, column=0, columnspan=2, sticky='ew')
+        Entry(templevel, textvariable=getkey1, show='*').grid(
+                row=1, column=1, sticky='ew')
         Label(templevel, text='Key: ').grid(row=1, column=0, sticky='e')
         toplevel.lift(self.master)
         if etype == 'open':
             # Call OpenPass method if passed the 'open' argument
             toplevel.protocol("WM_DELETE_WINDOW", lambda: self.Messages(2, '', toplevel))
-            Button(templevel, text='Ok', command=lambda: self.OpenPass(getkey1.get(),
-                toplevel)).grid(row=2, column=1, sticky='ew')
+            b1 = Button(templevel, text='Ok', default='active', command=lambda: self.OpenPass(
+                        getkey1.get(), toplevel))
+            b1.grid(row=2, column=1, sticky='ew')
         else:
             # If not passed an argument get key for encryption and create a second
             # entry widget for passphrase matching
-            Entry(templevel, textvariable=getkey2, show='*').grid(row=2, column=1, sticky='ew')
-            Label(templevel, text='Re-Type: ', anchor='w').grid(row=2, column=0, sticky='e')
-            Button(templevel, text='Ok', command=lambda: self.SavePass(getkey1.get(), 
-                getkey2.get(), toplevel)).grid(row=3, column=1, sticky='ew')
+            Entry(templevel, textvariable=getkey2, show='*').grid(
+                    row=2, column=1, sticky='ew')
+            Label(templevel, text='Re-Type: ', anchor='w').grid(
+                    row=2, column=0, sticky='e')
+            b1 = Button(templevel, text='Ok', default='active', command=lambda: self.SavePass(
+                        getkey1.get(), getkey2.get(), toplevel))
+            b1.grid(row=3, column=1, sticky='ew')
+
+        # Bind the enter/return key to the 'Ok' button
+        toplevel.bind('<Return>', lambda e: b1.invoke())
 
         
     def ImExBox(self, whatdo='Import'):
-        # Toplevel GUI for getting a delimiter for importing and exporting
+        """Provide a Toplevel gui for getting a delimiter for importing and exporting."""
+
         delimiter = StringVar()
         exbox = Toplevel(self.master)
         Label(exbox, text='Type custom delimiter').grid(row=0, column=0, columnspan=2, sticky='ew')
         Entry(exbox, textvariable=delimiter).grid(row=1, column=0, columnspan=2, sticky='ew')
         if whatdo == 'Export':
-            Button(exbox, text='Ok', command=lambda: self.ExportPass(delimiter.get(), exbox)).grid(row=2, column=0, sticky='ew')
+            # If passed 'Export' send the delimiter to the ExportPass method
+            b1 = Button(exbox, text='Ok', default='active', command=lambda: self.ExportPass(delimiter.get(), exbox))
+            b1.grid(row=2, column=0, sticky='ew')
         else:
-            Button(exbox, text='Ok', command=lambda: self.ImportPass(delimiter.get(), exbox)).grid(row=2, column=0, sticky='ew')
+            # If passed 'Import' send the delimiter to the ImportPass method (default).
+            b1 = Button(exbox, text='Ok', default='active', command=lambda: self.ImportPass(delimiter.get(), exbox))
+            b1.grid(row=2, column=0, sticky='ew')
         Button(exbox, text='Cancel', command=lambda: exbox.destroy()).grid(row=2, column=1, sticky='ew')
+        exbox.bind('<Return>', lambda e: b1.invoke())
 
 
     def ImportPass(self, delim, caller):
+        """Get a filename and pass it and a delimiter to Passes.Phrase.Import."""
+
         # Function to import data from text file
         caller.destroy()
         filname = fbox.askopenfilename()
-        if filname != '':
+        if filname != ():
             if len(delim) == 0:
                 imported = self.PassData.Import(filname)
             else:
                 imported = self.PassData.Import(filname, delim)
-        for serv in imported:
-            vals = tuple(self.PassData.Phrases[serv])
-            self.tree.insert('', 'end', text=serv, values=vals)
-        mbox.showinfo(message='Import Complete')
+            for serv in imported:
+                vals = tuple(self.PassData.Phrases[serv])
+                self.tree.insert('', 'end', text=serv, values=vals)
+            mbox.showinfo(message='Import Complete')
+        else:
+            mbox.showinfo(message='No filename provided - import not executed.')
 
 
     def ExportPass(self, delim, caller):
+        """Get a filename and pass it and a delimiter to Passes.Phrase.Export."""
+
         # Function to export data to text file
         caller.destroy()
         filname = fbox.asksaveasfilename()
-        if filname != '':
+        if filname != ():
             if len(delim) == 0:
                 self.PassData.Export(filname)
             else:
@@ -218,6 +268,8 @@ class App():
 
     
     def Messages(self, messnum, mess='', caller=None):
+        """Provide info/warning messages to the user when needed."""
+
         # A place for prebuilt messages that can be called. Or a way to build custom messages.
         if messnum == 1:
             mbox.showinfo(message="Warning: no encryption key provided.  Not encrypting passwords file")

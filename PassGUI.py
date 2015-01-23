@@ -31,7 +31,7 @@ class App():
         filemenu.add_command(label='Import', command=self.ImExBox)
         filemenu.add_command(label='Export', command=lambda: self.ImExBox('Export'))
         filemenu.add_separator()
-        filemenu.add_command(label='Exit', command=self.placeholder)
+        filemenu.add_command(label='Exit', command=self.Exit)
         menubar.add_cascade(menu=filemenu, label='File')
         editmenu = Menu(menubar)
         editmenu.add_command(label='Add', command=self.AddPassBox)
@@ -70,6 +70,11 @@ class App():
         self.mainframe.columnconfigure(0, weight=1)
         self.mainframe.rowconfigure(0, weight=1)
 
+        # Set protocol for when window is closed via window manager.
+        master.protocol("WM_DELETE_WINDOW", self.Exit)
+
+        # Keep track of whether or not changes have been saved. (0=yes, 1=no)
+        self.saved=0
         # Instantiate password data. (Not really gui related)
         self.PassData = Passes.Phrase()
         # Open data file if it exists
@@ -113,6 +118,8 @@ class App():
         # Instert data into tree
         if added != None:
             self.tree.insert('', 'end', text=added[0], values=(tuple(added[1:])))
+        # Mark that changes should be saved (should one exit before doing so)
+        self.saved=1
 
 
     def RemPass(self):
@@ -125,6 +132,8 @@ class App():
         self.PassData.Remove(remlist)
         for serv in selection:
             self.tree.delete(serv)
+        # Mark 'not saved'
+        self.saved=1
 
 
     def SavePass(self, ekey1, ekey2, caller):
@@ -139,15 +148,18 @@ class App():
         that both encryption keys match and then passes the encryption key to the save
         method.
         """
+
         caller.destroy()
         if ekey1 == ekey2 and len(ekey1) > 0:
             self.PassData.Save(self.PassData.Phrases, self.PassData.wfile, ekey1)
+            self.saved=0
         elif ekey1 != ekey2 and len(ekey1) > 0:
             mbox.showinfo(message="Error: Key1 and Key2 don't match.  Please retype them.")
             self.GetEncr()
         else:
             self.Messages(1)
             self.PassData.Save(self.PassData.Phrases, self.PassData.wfile)
+            self.saved=0
 
 
     def OpenPass(self, ekey, caller):
@@ -247,6 +259,7 @@ class App():
             for serv in imported:
                 vals = tuple(self.PassData.Phrases[serv])
                 self.tree.insert('', 'end', text=serv, values=vals)
+                self.saved=1
             mbox.showinfo(message='Import Complete')
         else:
             mbox.showinfo(message='No filename provided - import not executed.')
@@ -267,6 +280,17 @@ class App():
             print ('filename box cancelled')
 
     
+    def Exit(self):
+        if self.saved == 0:
+            self.master.destroy()
+        else:
+            cont = mbox.askyesno(
+                message='Warning: Current changes not saved. Do you wish to Continue?',
+                icon='warning', title='Exit')
+            if cont:
+                self.master.destroy()
+
+
     def Messages(self, messnum, mess='', caller=None):
         """Provide info/warning messages to the user when needed."""
 

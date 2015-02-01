@@ -67,7 +67,7 @@ class Phrase():
             self.Phrases[Serv] = [arg.strip('\n') for arg in apdata[:7]]
             # If list is less then seven add blank stuff
             while len(self.Phrases[Serv]) < 7:
-                self.Phrases[Serv].append('--')
+                self.Phrases[Serv].append('')
 
             # Add time created/modified
             tim = localt(); mtm = ''

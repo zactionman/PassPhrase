@@ -1,7 +1,6 @@
 Todo List for the PassPhrase program.
 
-1. Make modify function
-2. Make copy function (for copying passwords)
-3. Add sort function
-4. Add find function
-5. Add option to view/hide fields
+1. Make copy function (for copying passwords)
+2. Add sort function
+3. Add find function
+4. Add option to view/hide fields

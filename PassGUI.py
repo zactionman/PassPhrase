@@ -36,7 +36,7 @@ class App():
         editmenu = Menu(menubar)
         editmenu.add_command(label='Add', command=self.AddPassBox)
         editmenu.add_command(label='Remove', command=self.RemPass)
-        editmenu.add_command(label='Modify', command=self.placeholder)
+        editmenu.add_command(label='Modify', command=self.ModPassBox)
         menubar.add_cascade(menu=editmenu, label='Edit')
         helpmenu = Menu(menubar)
         helpmenu.add_command(label='Help', command=self.placeholder)
@@ -136,8 +136,76 @@ class App():
         self.saved=1
 
 
+    def ModPassBox(self):
+        """Toplevel GUI for getting changes to a service from the user"""
+
+        # Get currently selected item in tree
+        selection = self.tree.selection()
+
+        if len(selection) != 1:
+            # Provide an error message if more or less than one item is selected
+            self.Messages(0, "You must have exactly one item selected in the Tree")
+        else:
+            # Tuple containing the tree identification number and service name
+            moditem = (selection[0], self.tree.item(selection[0], 'text'))
+
+            # Create toplevel GUI
+            ModBox = Toplevel(self.master)
+            fields = ['Service', 'Login', 'Password', 'Answer1', 'Answer2', 
+                    'Answer3', 'Answer4', 'Answer5']
+            self.modata = [1, 2, 3, 4, 5, 6, 7]
+
+            # Show which service is being modified in the topleve
+            Label(ModBox, text=fields[0]).grid(row=0, column=0)
+            Label(ModBox, text=moditem[1]).grid(row=0, column=1)
+
+            for i in range(0, 7):
+                # Build the Labels and Entry widgets for the toplevel
+                self.modata[i] = StringVar()
+                self.modata[i].set(self.PassData.Phrases[moditem[1]][i])
+                Label(ModBox, text=fields[i+1]).grid(row=i+1, column=0)
+                Entry(ModBox, textvariable=self.modata[i]).grid(
+                      row=i+1, column=1)
+
+            # Okay and Cancel button
+            butframe = Frame(ModBox)
+            butframe.grid(row=8, column=1, sticky='ew')
+            b1 = Button(butframe, text='Ok', default='active',
+                    command=lambda: self.ModPass(moditem, ModBox))
+            b1.grid(row=0, column=0, sticky='ew')
+            b2 = Button(butframe, text='Cancel',
+                    command=lambda: ModBox.destroy())
+            b2.grid(row=0, column=1, sticky='ew')
+
+            # Bind Return to the Ok button (b1)
+            ModBox.bind('<Return>', lambda e: b1.invoke())
+
+
+    def ModPass(self, serv, caller):
+        """Write out modified data to interal data structure and tree."""
+
+        # Destroy toplevel widget
+        caller.destroy()
+
+        # Get the data from the entry widgets
+        newdata = []
+        for item in self.modata:
+            newdata.append(item.get())
+        
+        # Pass new data to the internal data structure
+        newdata = self.PassData.Modify(serv[1], newdata)
+
+        # If modify was succesful writeout new data to the tree widget
+        if newdata != None:
+            self.tree.item(serv[0], values=tuple(newdata))
+            # Mark that save is needed
+            self.saved=1
+        else:
+            Messages(0, 'Oops: This service did not exist')
+
+
     def SavePass(self, ekey1, ekey2, caller):
-        """Get enccryption key (optional) and pass it to the save method of internal data class.
+        """Get enccryption key and pass it to the save method of Passes.Phrase.
         
         SavePass is called by the GetEncr GUI which expects the user to type in an 
         encryption key. If SavePass is called with an empty encryption key it calls the
@@ -295,7 +363,9 @@ class App():
         """Provide info/warning messages to the user when needed."""
 
         # A place for prebuilt messages that can be called. Or a way to build custom messages.
-        if messnum == 1:
+        if messnum == 0:
+            mbox.showinfo(message=mess)
+        elif messnum == 1:
             mbox.showinfo(message="Warning: no encryption key provided.  Not encrypting passwords file")
         elif messnum == 2:
             answer = mbox.askokcancel(message="""Warning: Open window closed.

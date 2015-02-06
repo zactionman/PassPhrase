@@ -117,7 +117,34 @@ class Phrase():
 
 
     def Modify(self, serv, *args):
-        pass
+        """Modify the contents of a service entry in the Phrases dict"""
+
+        # Make sure Service exists
+        if self.Phrases['Services'].count(serv) == 1:
+            # Re-write service with modified data
+
+            servdata = []
+            # Expand/unpack args allowing use of combination of positional arguments/lists
+            for data in args:
+                if type(data) is list:
+                    # If this is a list expand
+                    servdata.extend(data)
+                else:
+                    # Single positional param gets appended
+                    servdata.append(data)
+
+            servdata = servdata[:7]
+
+            # Add time modified
+            tim = localt(); mtm = ''
+            mtim = str(tim[0]) + '/' + str(tim[1]) + '/' + str(tim[2])
+            mtim = mtim + ' ' + str(tim[3]) + ':' + str(tim[4])
+            servdata.append(mtim)
+
+            self.Phrases[serv] = servdata; return servdata
+        else:
+            print ("This service doesn't exist.  Please choose a unique service name")
+            return None
 
 
     def Save(self, saveobj, savepath, enckey=None):

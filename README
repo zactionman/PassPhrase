@@ -1,4 +1,4 @@
-PassPhrase Version Alpha 1.2.1 01/09/2015
+PassPhrase Version Alpha 1.2.1 02/05/2015
 
 	General Usage
 	-------------
@@ -27,6 +27,7 @@ PassPhrase Version Alpha 1.2.1 01/09/2015
 
 	History:
 	-------
+    02-05-2015 - Added the modify function
     01-09-2015 - Added some keyboard bindings to the GUI and improved robustness.
     01-02-2015 - Many attempted bug fixes and additions to improve robustness.
     12-20-2014 - Added function for importing data from a text file.

@@ -11,7 +11,22 @@ from time import localtime as localt
 from sys import argv
 
 class Phrase():
-    """An object containing all internal password data and methods for managing this data"""
+    """An object containing all internal password data and methods for managing this data
+    
+    The primary purpose of this class is to maintain a the Phrases dictionary which contains
+    an entry for each service (and their associated data) and a list of all known services
+    which is kept in parallel.  The Phrases dict contains all important internal data and
+    the subsequent methods modify this dictionary appropriately.
+
+    For each added service the service name is appended to the 'Services' list.  Then
+    a subsequent list (tied to a key that is equal to the service name) is added to the
+    dict which contains all data in relation to that service in the following order:
+
+    Login, Password, A1, A2, A3, A4, A5, Mod
+
+    (A1-A5 is Answer1-Answer5 for any related questions for the account and Mod is
+    modification time)
+    """
 
     def __init__(self):
         
@@ -23,6 +38,7 @@ class Phrase():
         self.crypton = argv[0][:-10] + 'cryptos'
         # Get user's home folder
         home = f.expanduser('~')
+
         # Find any existing passwords files.  
         # If none exist create variable containing a path of where it will be written
         if f.isfile(home + '/.config/passphrase/words.enc') or f.isfile(
@@ -48,7 +64,7 @@ class Phrase():
 
     
     def Add(self, Serv, *args):
-        """Add service(s) to the internal data structure"""
+        """Add service(s) to the internal data structure (Phrases dict)"""
 
         # Make sure Service doesn't already exist
         if self.Phrases['Services'].count(Serv) == 0:
@@ -83,7 +99,7 @@ class Phrase():
             return None
 
     def Remove(self, *args):
-        """Remove service(s) from internal data structure"""
+        """Remove service(s) from internal data structure (Phrases Dict)"""
 
         for arg in args:
             if type(arg) is list:
@@ -98,6 +114,10 @@ class Phrase():
         #del self.Phrases['Services'][n]
         # Delete related service info
         #del self.Phrases[Serv]
+
+
+    def Modify(self, serv, *args):
+        pass
 
 
     def Save(self, saveobj, savepath, enckey=None):

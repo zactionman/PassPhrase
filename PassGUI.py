@@ -34,6 +34,8 @@ class App():
         filemenu.add_command(label='Exit', command=self.Exit)
         menubar.add_cascade(menu=filemenu, label='File')
         editmenu = Menu(menubar)
+        editmenu.add_command(label='Copy', command=self.CopyPass)
+        editmenu.add_separator()
         editmenu.add_command(label='Add', command=self.AddPassBox)
         editmenu.add_command(label='Remove', command=self.RemPass)
         editmenu.add_command(label='Modify', command=self.ModPassBox)
@@ -71,7 +73,9 @@ class App():
         self.mainframe.rowconfigure(0, weight=1)
 
         # Set protocol for when window is closed via window manager.
+        # And set bindings
         master.protocol("WM_DELETE_WINDOW", self.Exit)
+        master.bind("<Control-c>", lambda e: self.CopyPass())
 
         # Keep track of whether or not changes have been saved. (0=yes, 1=no)
         self.saved=0
@@ -202,6 +206,20 @@ class App():
             self.saved=1
         else:
             Messages(0, 'Oops: This service did not exist')
+
+
+    def CopyPass(self):
+        """Copy an items Password to the clipboard"""
+
+        # Get current selection!
+        selitem = self.tree.selection()
+
+        # Get password for currently selected item.
+        selvalues = self.tree.item(selitem[0], 'values')
+        
+        # Write the password to the clipboard
+        self.master.clipboard_clear()
+        self.master.clipboard_append(selvalues[1])
 
 
     def SavePass(self, ekey1, ekey2, caller):

@@ -26,6 +26,7 @@ class App():
         root.option_add('*tearOff', FALSE)
         menubar = Menu(master)
         master['menu'] = menubar
+        # File Menu
         filemenu = Menu(menubar)
         filemenu.add_command(label='Save', command=self.GetEncr)
         filemenu.add_command(label='Import', command=self.ImExBox)
@@ -33,13 +34,16 @@ class App():
         filemenu.add_separator()
         filemenu.add_command(label='Exit', command=self.Exit)
         menubar.add_cascade(menu=filemenu, label='File')
+        # Edit Menu
         editmenu = Menu(menubar)
         editmenu.add_command(label='Copy', command=self.CopyPass)
+        editmenu.add_command(label='Find', command=self.FindBox)
         editmenu.add_separator()
         editmenu.add_command(label='Add', command=self.AddPassBox)
         editmenu.add_command(label='Remove', command=self.RemPass)
         editmenu.add_command(label='Modify', command=self.ModPassBox)
         menubar.add_cascade(menu=editmenu, label='Edit')
+        # Help Menu
         helpmenu = Menu(menubar)
         helpmenu.add_command(label='Help', command=self.placeholder)
         menubar.add_cascade(menu=helpmenu, label='Help')
@@ -61,10 +65,10 @@ class App():
         self.xscroll = Scrollbar(self.mainframe, orient=HORIZONTAL, command=self.tree.xview)
         self.tree.configure(yscrollcommand=self.vscroll.set, xscrollcommand=self.xscroll.set)
         self.vscroll.grid(row=0, column=1, sticky=(N,S,W))
-        self.xscroll.grid(row=1, column=0, sticky=(N,E,W))
+        self.xscroll.grid(row=2, column=0, sticky=(N,E,W))
 
         # Sizegrip
-        Sizegrip(self.mainframe).grid(row=1, column=1, sticky=(E,S))
+        Sizegrip(self.mainframe).grid(row=2, column=1, sticky=(E,S))
 
         # Make resizeable
         master.columnconfigure(0, weight=1)
@@ -220,6 +224,29 @@ class App():
         # Write the password to the clipboard
         self.master.clipboard_clear()
         self.master.clipboard_append(selvalues[1])
+
+
+    def FindBox(self):
+        """Draw a find bar at the bottom of the window"""
+
+        # Draw initial frame for search stuff
+        findframe = Frame(self.mainframe, relief='sunken')
+        findframe.grid(row=1, column=0, sticky=(E,W))
+
+        search = StringVar()
+        Entry(findframe, textvariable=search).grid(row=0, column=0)
+        Button(findframe, text='Find', command=lambda: self.FindPass(search)
+                ).grid(row=0, column=1)
+        Button(findframe, text='Next', command=self.placeholder).grid(
+                row=0, column=2)
+        Button(findframe, text='Close', command=lambda: findframe.destroy()
+                ).grid(row=0, column=3, sticky=E)
+
+
+    def FindPass(self, search):
+        """Get a string from the user and use it to search for services"""
+
+        pass
 
 
     def SavePass(self, ekey1, ekey2, caller):

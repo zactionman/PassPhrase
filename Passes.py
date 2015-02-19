@@ -147,6 +147,12 @@ class Phrase():
             return None
 
 
+    def Find(self, search, field='All'):
+        """Find an entry based on a search string"""
+
+        [x for x in self.Phrases['Services'] if search in x]
+                        
+
     def Save(self, saveobj, savepath, enckey=None):
         """Writeout internal data structure to picklefile then (optionally) encrypt it"""
 

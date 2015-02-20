@@ -59,6 +59,8 @@ class App():
         for colname in tcolumns:
             self.tree.column(colname, width=90, minwidth=50, anchor='center')
             self.tree.heading(colname, text=colname)
+        # Dictionary of tree item/text values
+        self.treedict = {}
 
         # Scrollbars
         self.vscroll = Scrollbar(self.mainframe, orient=VERTICAL, command=self.tree.yview)
@@ -80,9 +82,14 @@ class App():
         # And set bindings
         master.protocol("WM_DELETE_WINDOW", self.Exit)
         master.bind("<Control-c>", lambda e: self.CopyPass())
+        master.bind("<Control-f>", lambda e: self.FindBox())
 
         # Keep track of whether or not changes have been saved. (0=yes, 1=no)
         self.saved=0
+        # Know whether find bar is open
+        # Uses 1 for open 0 for closed
+        self.findb='None'
+
         # Instantiate password data. (Not really gui related)
         self.PassData = Passes.Phrase()
         # Open data file if it exists
@@ -125,7 +132,8 @@ class App():
         added = self.PassData.Add(data[0], data[1:])
         # Instert data into tree
         if added != None:
-            self.tree.insert('', 'end', text=added[0], values=(tuple(added[1:])))
+            item1 = self.tree.insert('', 'end', text=added[0], values=(tuple(added[1:])))
+            self.treedict[added[0]] = item1
         # Mark that changes should be saved (should one exit before doing so)
         self.saved=1
 
@@ -138,8 +146,9 @@ class App():
         remlist = [self.tree.item(serv, 'text') for serv in selection]
         # Remove stuff
         self.PassData.Remove(remlist)
-        for serv in selection:
+        for serv, text in zip(selection, remlist):
             self.tree.delete(serv)
+            del self.treedict[text]
         # Mark 'not saved'
         self.saved=1
 
@@ -228,25 +237,47 @@ class App():
 
     def FindBox(self):
         """Draw a find bar at the bottom of the window"""
+        
+        if self.findb == 0:
+            # Re-grid findframe if it's off screen
+            self.findframe.grid()
+            self.findb = 1
+        elif self.findb == 1:
+            # Remove find box if it's already on screen
+            self.findframe.grid_remove()
+            self.findb = 0
+        else:
+            # Draw initial frame for search stuff at start of program and hide it
+            self.findframe = Frame(self.mainframe, relief='sunken')
+            self.findframe.grid(row=1, column=0, sticky='ew')
 
-        # Draw initial frame for search stuff
-        findframe = Frame(self.mainframe, relief='sunken')
-        findframe.grid(row=1, column=0, sticky=(E,W))
-
-        search = StringVar()
-        Entry(findframe, textvariable=search).grid(row=0, column=0)
-        Button(findframe, text='Find', command=lambda: self.FindPass(search)
-                ).grid(row=0, column=1)
-        Button(findframe, text='Next', command=self.placeholder).grid(
+            # Entry widgets and buttons for findbar
+            search = StringVar()
+            Entry(self.findframe, textvariable=search).grid(
+                row=0, column=0, sticky='ew')
+            Button(self.findframe, text='Find',
+                command=lambda: self.FindPass(search)).grid(row=0, column=1)
+            Button(self.findframe, text='Next', command=self.placeholder).grid(
                 row=0, column=2)
-        Button(findframe, text='Close', command=lambda: findframe.destroy()
+            Button(self.findframe, text='Close', command=self.FindBox
                 ).grid(row=0, column=3, sticky=E)
+
+            self.findframe.columnconfigure(0, weight=1)
+
+            # Set findframe to open
+            self.findb = 1
 
 
     def FindPass(self, search):
         """Get a string from the user and use it to search for services"""
 
-        pass
+        results = self.PassData.Find(search.get())
+        if results != []:
+            # If matches were found find their tkinter id's and select them
+            select = [self.treedict[x] for x in results]
+            self.tree.selection('set', tuple(select))
+            # Show if off screen
+            self.tree.see(select[0])
 
 
     def SavePass(self, ekey1, ekey2, caller):
@@ -292,9 +323,11 @@ class App():
             success = self.PassData.Open(self.PassData.wfile)
 
         if success:
+            #print (self.PassData.Phrases['Services'])
             for service in self.PassData.Phrases['Services']:
                 servdata = tuple(self.PassData.Phrases[service])
-                self.tree.insert('', 'end', text=service, values=servdata)
+                item1 = self.tree.insert('', 'end', text=service, values=servdata)
+                self.treedict[service] = item1 
         else:
             self.Messages(3)
             self.GetEncr('open')

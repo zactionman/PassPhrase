@@ -150,7 +150,7 @@ class Phrase():
     def Find(self, search, field='All'):
         """Find an entry based on a search string"""
 
-        [x for x in self.Phrases['Services'] if search in x]
+        return [x for x in self.Phrases['Services'] if search in x]
                         
 
     def Save(self, saveobj, savepath, enckey=None):

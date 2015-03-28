@@ -52,13 +52,34 @@ class App():
         self.tree = Treeview(self.mainframe)
         self.tree.grid(row=0, column=0, sticky=(N,E,S,W))
         self.tree.column('#0', width=90, minwidth=50, anchor='center')
-        self.tree.heading('#0', text='Service')
+        self.tree.heading('#0', text='Service',
+            command=lambda: self.SortCol('#0'))
         tcolumns = ('Login', 'Password', 'Answer1', 'Answer2', 'Answer3',
             'Answer4', 'Answer5', 'Modified')
         self.tree['columns'] = tcolumns
+        # Configure each column.
         for colname in tcolumns:
             self.tree.column(colname, width=90, minwidth=50, anchor='center')
-            self.tree.heading(colname, text=colname)
+        # I used to do this over a loop but I had to switch to configuring each
+        # one individually so that the lambda function that is called when the
+        # column is clicked on sends the right arg.  I may be able to switch 
+        # this back to a loop later (when I figure out how).
+        self.tree.heading('Login', text='Login',
+            command=lambda: self.SortCol(0))
+        self.tree.heading('Password', text='Password',
+            command=lambda: self.SortCol(1))
+        self.tree.heading('Answer1', text='Answer1',
+            command=lambda: self.SortCol(2))
+        self.tree.heading('Answer2', text='Answer2',
+            command=lambda: self.SortCol(3))
+        self.tree.heading('Answer3', text='Answer3',
+            command=lambda: sefl.SortCol(4))
+        self.tree.heading('Answer4', text='Answer4',
+            command=lambda: self.SortCol(5))
+        self.tree.heading('Answer5', text='Answer5',
+            command=lambda: self.SortCol(6))
+        self.tree.heading('Modified', text='Modified',
+            command=lambda: self.SortCol(7))
         # Dictionary of tree item/text values
         self.treedict = {}
 
@@ -426,6 +447,24 @@ class App():
             print ('filename box cancelled')
 
     
+    def SortCol(self, colnum):
+        """Sort a field in the treeview when the column header is clicked"""
+
+        if colnum == '#0':
+            # Sort the first column
+            sortdict = {self.tree.item(nid, 'text').capitalize(): nid 
+                for nid in self.tree.get_children('')}
+            [self.tree.move(sortdict[x], '', 'end') 
+                for x in sorted(sortdict.keys())]
+        else:
+            # Sort column 1-8
+            sortdict = {self.tree.item(nid, 'values')[colnum].capitalize(): nid
+                for nid in self.tree.get_children('')}
+            [self.tree.move(sortdict[x], '', 'end')
+                for x in sorted(sortdict.keys())]
+
+
+
     def Exit(self):
         if self.saved == 0:
             self.master.destroy()

@@ -91,6 +91,7 @@ class Phrase():
             mtim = mtim + ' ' + str(tim[3]) + ':' + str(tim[4])
             self.Phrases[Serv].append(mtim)
             
+            self.Phrases['Services'].sort()
             # Return added info for - incase calling frontend wants it...
             return [Serv] + self.Phrases[Serv]
             

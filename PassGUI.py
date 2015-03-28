@@ -73,7 +73,7 @@ class App():
         self.tree.heading('Answer2', text='Answer2',
             command=lambda: self.SortCol(3))
         self.tree.heading('Answer3', text='Answer3',
-            command=lambda: sefl.SortCol(4))
+            command=lambda: self.SortCol(4))
         self.tree.heading('Answer4', text='Answer4',
             command=lambda: self.SortCol(5))
         self.tree.heading('Answer5', text='Answer5',

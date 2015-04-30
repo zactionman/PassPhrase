@@ -36,6 +36,7 @@ class Phrase():
         # Get path to cryptos script
         # This will eventually change as I will eventually re-write cryptos in python
         self.crypton = argv[0][:-10] + 'cryptos'
+        print (self.crypton)
         # Get user's home folder
         home = f.expanduser('~')
 

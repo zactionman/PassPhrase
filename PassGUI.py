@@ -274,12 +274,15 @@ class App():
 
             # Entry widgets and buttons for findbar
             search = StringVar()
+            casematch = StringVar(); casematch.set('No')
             Entry(self.findframe, textvariable=search).grid(
                 row=0, column=0, sticky='ew')
             Button(self.findframe, text='Find',
-                command=lambda: self.FindPass(search)).grid(row=0, column=1)
-            Button(self.findframe, text='Next', command=self.placeholder).grid(
-                row=0, column=2)
+                command=lambda: self.FindPass(search, casematch)).grid(row=0, column=2)
+            Checkbutton(self.findframe, text='Match Case', variable=casematch,
+                onvalue='Yes', offvalue='No').grid(row=0, column=1)
+            #Button(self.findframe, text='Next', command=self.placeholder).grid(
+            #    row=0, column=2)
             Button(self.findframe, text='Close', command=self.FindBox
                 ).grid(row=0, column=3, sticky=E)
 
@@ -289,10 +292,10 @@ class App():
             self.findb = 1
 
 
-    def FindPass(self, search):
+    def FindPass(self, search, cases):
         """Get a string from the user and use it to search for services"""
 
-        results = self.PassData.Find(search.get())
+        results = self.PassData.Find(search.get(), cases.get())
         if results != []:
             # If matches were found find their tkinter id's and select them
             select = [self.treedict[x] for x in results]

@@ -1,4 +1,4 @@
-PassPhrase Version Alpha 1.2.5 03/27/2015
+PassPhrase Version Alpha 1.2.6 04/30/2015
 
 	General Usage
 	-------------
@@ -27,6 +27,8 @@ PassPhrase Version Alpha 1.2.5 03/27/2015
 
 	History:
 	-------
+    04-30-2015 - Added case sensitivity option to Find function
+    04-30-2015 - Ported Cryptos to python module
     03-27-2015 - Added first draft of sort function (also limited)
     02-20-2015 - Added first draft of find function (very limited)
     02-06-2015 - Added a copy function.  Ctrl-c copys pass to clipboard.

@@ -7,6 +7,7 @@
 import pickle
 import subprocess
 import os.path as f
+from Cryptos import crypton
 from time import localtime as localt
 from sys import argv
 
@@ -33,15 +34,17 @@ class Phrase():
         # Main data object
         self.Phrases = { 'Services' : [] }
         
-        # Get path to cryptos script
-        # This will eventually change as I will eventually re-write cryptos in python
-        self.crypton = argv[0][:-10] + 'cryptos'
-        print (self.crypton)
+        # Initialize words filepath
+        self.WordsInit()
+
+    def WordsInit(self):
+        """Find and map the words filepath which is where password data is stored.
+
+        If no words document exists then create an empty one"""
+
         # Get user's home folder
         home = f.expanduser('~')
 
-        # Find any existing passwords files.  
-        # If none exist create variable containing a path of where it will be written
         if f.isfile(home + '/.config/passphrase/words.enc') or f.isfile(
             home + '/.config/passphrase/words'):
             self.wfile = home + '/.config/passphrase/words'
@@ -149,10 +152,13 @@ class Phrase():
             return None
 
 
-    def Find(self, search, field='All'):
+    def Find(self, search, casematch, field='All'):
         """Find an entry based on a search string"""
 
-        return [x for x in self.Phrases['Services'] if search in x]
+        if casematch == 'Yes':
+            return [x for x in self.Phrases['Services'] if search in x]
+        else:
+            return [x for x in self.Phrases['Services'] if search.lower() in x.lower()]
                         
 
     def Save(self, saveobj, savepath, enckey=None):
@@ -166,7 +172,8 @@ class Phrase():
             # Pickle to file then encrypt file
             with open(savepath, 'wb') as fil:
                 pickle.dump(saveobj, fil)
-            subprocess.call([self.crypton, 'e', savepath, enckey])
+            crypton('e', savepath, enckey)
+            #subprocess.call([self.crypton, 'e', savepath, enckey])
 
 
     def Open(self, openpath, enckey=None):
@@ -194,17 +201,20 @@ class Phrase():
             else:
                 # Decrypt file then load it
                 print ('Decrypting passwords to load into program')
-                subprocess.call([self.crypton, 'd', openpath, enckey])
+                crypton('d', openpath, enckey)
+                #subprocess.call([self.crypton, 'd', openpath, enckey])
                 with open(openpath, 'rb') as fil:
                     loadfile = pickle.load(fil)
                 # Clean up the temporarily decrypted file
                 print ('Clean temp file')
-                subprocess.call([self.crypton, 'c', openpath, 'keystub'])
+                crypton('c', openpath)
+                #subprocess.call([self.crypton, 'c', openpath, 'keystub'])
             self.Phrases = loadfile
             return True
         except pickle.UnpicklingError:
             print ('Typed in wrong encryption key')
-            subprocess.call([self.crypton, 'c', openpath, 'keystub'])
+            crypton('c', openpath)
+            #subprocess.call([self.crypton, 'c', openpath, 'keystub'])
             return False
         except FileNotFoundError:
             print ('File is encrypted, please type encryption key.')

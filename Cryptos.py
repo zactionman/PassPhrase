@@ -1,25 +1,33 @@
-#! /bin/bash
+#! /usr/bin/python
+# Begin translation to python script
 
-# A basic little module to be called by the PassPhrase program to handle encryption
-# and decryption. It should take either 'e' or 'd' as the first argument. 'e' tells
-# it to encrypt and 'd' tells it to decrypt. The second argument is the file to
-# encrypt/decrypt, and the third argument is the password for the cipher.
+from sys import argv
+from subprocess import call
+import os.path as f
 
-TYPE=$1
-FILE=$2
-PASS=$3
 
-if [[ $TYPE == 'e' && -f $FILE ]]; then
-	openssl aes-256-cbc -a -salt -in $FILE -out ${FILE}.enc -pass pass:$PASS
-	rm $FILE
-	exit 0
-elif [[ $TYPE == 'd' && -f ${FILE}.enc ]]; then
-	openssl aes-256-cbc -d -a -in ${FILE}.enc -out $FILE -pass pass:$PASS
-	exit 0
-elif [[ $TYPE == 'c' && -f $FILE ]]; then
-	rm $FILE
-	exit 0
-else
-	echo 'There was a problem with encryption/decryption' 1>&2
-	exit 1
-fi
+# Do the actual encryption/decrypting
+def crypton(TYPE, FILE, PASS=''):
+    ENCRYP = FILE + '.enc'
+
+    if TYPE == 'e' and f.isfile(FILE):
+        status = call(['openssl', 'aes-256-cbc', '-a', '-salt', '-in', FILE, '-out', ENCRYP, '-pass', 'pass:{}'.format(PASS)])
+        call(['rm', FILE])
+    elif TYPE == 'd' and f.isfile(ENCRYP):
+        call(['openssl', 'aes-256-cbc', '-d', '-a', '-in', ENCRYP, '-out', FILE, '-pass', 'pass:{}'.format(PASS)])
+    elif TYPE == 'c' and f.isfile(FILE):
+        call(['rm', FILE])
+    else:
+        print ('There was a problem with encryption/decryption')
+
+if __name__ == '__main__':
+    # Create appropriate variables
+    SCRIPT = argv[0]
+    TYPE, FILE = argv[1:3]
+    # Only populate PASS if pass was given as an argument.  Otherwise empty string.
+    if len(argv) == 4:
+        PASS = argv[3]
+    else:
+        PASS = ''
+
+    crypton(TYPE, FILE, PASS)
